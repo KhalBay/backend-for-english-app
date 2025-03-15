@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config()
 
 const app = express()
-const port = process.env.PORT || 3000
+const port = process.env.DB_PORT || 3000
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -12,9 +12,6 @@ const pool = new Pool({
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
-    ssl: {
-        rejectUnauthorized: false, // Отключает проверку сертификата
-    },
 })
 
 pool.query('SELECT NOW()', (err, res) => {
