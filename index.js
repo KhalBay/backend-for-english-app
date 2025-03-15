@@ -17,6 +17,14 @@ const pool = new Pool({
     },
 })
 
+pool.query('SELECT NOW()', (err, res) => {
+    if (err) {
+        console.error('Ошибка подключения к PostgreSQL:', err)
+    } else {
+        console.log('Успешное подключение к PostgreSQL:', res.rows[0])
+    }
+})
+
 app.use(express.json())
 
 
