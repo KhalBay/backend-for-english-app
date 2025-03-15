@@ -27,6 +27,41 @@ pool.query('SELECT NOW()', (err, res) => {
         console.log('Успешное подключение к PostgreSQL:', res.rows[0])
     }
 })
+// Функция для создания таблиц и вставки данных
+const initializeDatabase = async () => {
+    try {
+        // Создание таблицы users
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Создание таблицы your_table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS your_table (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(50) NOT NULL
+            );
+        `);
+
+        // Вставка тестовых данных в your_table
+        await pool.query(`
+            INSERT INTO your_table (name)
+            VALUES ('Example 1'), ('Example 2')
+            ON CONFLICT DO NOTHING;
+        `);
+
+        console.log('Таблицы успешно созданы или уже существуют.');
+    } catch (err) {
+        console.error('Ошибка при инициализации базы данных:', err);
+    }
+};
+
+// Вызов функции при запуске сервера
+initializeDatabase();
 
 app.use(express.json())
 
