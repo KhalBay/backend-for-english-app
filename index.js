@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config()
 
 const app = express()
-const port = process.env.DB_PORT || 3000
+const port = process.env.PORT || 3000
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -78,7 +78,17 @@ app.get('/protected', (req, res) => {
         console.error('Ошибка при проверке токена:', err)
         res.status(401).json({ message: 'Invalid token' })
     }
-});
+})
+
+app.get('/data', async (req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM your_table')
+        res.json(rows)
+    } catch (err) {
+        console.error(err)
+        res.status(500).send('Server error')
+    }
+})
 
 app.listen(port, () => {
     console.log(`Сервер запущен на порту ${port}`)
