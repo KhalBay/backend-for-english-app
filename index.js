@@ -76,8 +76,72 @@ const authenticateToken = (req, res, next) => {
     })
 }
 
-app.get('/', authenticateToken, (req, res) => {
-    res.send('Hello World!')
+app.get('/scores', authenticateToken, async (req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM scores')
+        const scoresByGame = {}
+
+        // Группируем результаты по играм
+        rows.forEach(row => {
+            if (!scoresByGame[row.game_name]) {
+                scoresByGame[row.game_name] = []
+            }
+            scoresByGame[row.game_name].push({
+                agent: row.agent,
+                time: row.time,
+                mistakes: row.mistakes,
+            });
+        });
+
+        res.json(scoresByGame)
+    } catch (err) {
+        console.error(err)
+        res.status(500).send('Server error')
+    }
+})
+
+app.post('/scores', authenticateToken, async (req, res) => {
+    const { game, time, mistakes, agent } = req.body
+    // const agent = req.user.username
+
+    if (!game || !time || !mistakes || !agent) {
+        return res.status(400).json({ message: 'Game, time, mistakes and agent are required' })
+    }
+
+    try {
+        // Проверяем, есть ли уже результат у пользователя для этой игры
+        const existingResult = await pool.query(
+            'SELECT * FROM scores WHERE game_name = $1 AND agent = $2',
+            [game, agent]
+        )
+
+        if (existingResult.rows.length > 0) {
+            const currentRecord = existingResult.rows[0]
+
+            // Если новый результат лучше
+            if (time < currentRecord.time) {
+                // Обновляем запись
+                await pool.query(
+                    'UPDATE scores SET time = $1, mistakes = $2 WHERE id = $3',
+                    [time, mistakes, currentRecord.id]
+                )
+                res.json({ message: 'Рекорд обновлен', record: { agent, time, mistakes } })
+            } else {
+                // Если результат хуже
+                res.json({ message: 'Рекорд не побит', record: currentRecord })
+            }
+        } else {
+            // Если результата нет, создаем новую запись
+            await pool.query(
+                'INSERT INTO scores (game_name, agent, time, mistakes) VALUES ($1, $2, $3, $4)',
+                [game, agent, time, mistakes]
+            )
+            res.json({ message: 'Рекорд добавлен', record: { agent, time, mistakes } })
+        }
+    } catch (err) {
+        console.error(err)
+        res.status(500).send('Server error')
+    }
 })
 
 app.listen(port, () => {
