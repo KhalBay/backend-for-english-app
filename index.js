@@ -17,16 +17,7 @@ const pool = new Pool({
     },
 })
 
-pool.query('SELECT NOW()', (err, res) => {
-    if (err) {
-        console.error('Ошибка подключения к PostgreSQL:', err)
-    } else {
-        console.log('Успешное подключение к PostgreSQL:', res.rows[0])
-    }
-})
-
 app.use(express.json())
-
 
 const JWT_SECRET = process.env.JWT_SECRET
 
@@ -63,37 +54,29 @@ app.post('/auth', async (req, res) => {
         console.error('Ошибка при авторизации/регистрации:', err)
         res.status(500).json({ message: 'Server error' })
     }
-});
+})
 
-// Защищенный маршрут (пример)
-app.get('/protected', (req, res) => {
-    const token = req.headers.authorization?.split(' ')[1]
+const authenticateToken = (req, res, next) => {
+    // Получаем токен из заголовка Authorization
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1] // Формат: "Bearer <token>"
 
     if (!token) {
         return res.status(401).json({ message: 'Token is required' })
     }
 
-    try {
-        // Проверка токена
-        const decoded = jwt.verify(token, JWT_SECRET)
-        res.json({ message: 'Access granted', user: decoded })
-    } catch (err) {
-        console.error('Ошибка при проверке токена:', err)
-        res.status(401).json({ message: 'Invalid token' })
-    }
-})
+    // Проверяем токен
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ message: 'Invalid token' })
+        }
+        // Если токен валиден, добавляем данные пользователя в запрос
+        req.user = user
+        next() // Передаем управление следующему middleware или маршруту
+    })
+}
 
-app.get('/data', async (req, res) => {
-    try {
-        const { rows } = await pool.query('SELECT * FROM your_table')
-        res.json(rows)
-    } catch (err) {
-        console.error(err)
-        res.status(500).send('Server error')
-    }
-})
-
-app.get('/', (req, res) => {
+app.get('/', authenticateToken, (req, res) => {
     res.send('Hello World!')
 })
 
