@@ -152,6 +152,12 @@ app.post('/scores', authenticateToken, async (req, res) => {
     }
 })
 
+app.get('/test', authenticateToken, async (req, res) => {
+    res.send('Test!')
+    const users = await pool.query('SELECT * FROM users')
+    res.send(users)
+})
+
 app.listen(port, () => {
     console.log(`Сервер запущен на порту ${port}`)
 })
