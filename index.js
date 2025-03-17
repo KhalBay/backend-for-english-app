@@ -152,10 +152,10 @@ app.post('/scores', authenticateToken, async (req, res) => {
     }
 })
 
-app.get('/test', authenticateToken, async (req, res) => {
+app.get('/test', async (req, res) => {
     // res.send('Test!')
     const users = await pool.query('SELECT * FROM users')
-    res.send(users)
+    res.send(users.rows)
 })
 
 app.listen(port, () => {
