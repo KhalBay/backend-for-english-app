@@ -1,5 +1,6 @@
 const express = require('express')
 const { Pool } = require('pg')
+const cors = require('cors');
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
 
@@ -16,6 +17,13 @@ const pool = new Pool({
         rejectUnauthorized: false,
     },
 })
+
+app.use(cors())
+// app.use(cors({
+//     origin: process.env.DB_HOST,
+//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//     allowedHeaders: ['Content-Type', 'Authorization'],
+// }))
 
 app.use(express.json())
 
@@ -45,7 +53,7 @@ app.post('/auth', async (req, res) => {
 
         // Создаем JWT-токен
         const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, {
-            expiresIn: '100h', // Токен действителен 100 часов
+            expiresIn: '100h', // Токен действителен 100 часов Поставить нееделю
         })
 
         // Отправляем токен клиенту
