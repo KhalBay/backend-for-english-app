@@ -112,7 +112,8 @@ app.post('/scores', authenticateToken, async (req, res) => {
     const { game, time, mistakes, agent } = req.body
     // const agent = req.user.username
 
-    if (!game || !time || !mistakes || !agent) {
+    // if (!game || !time || !mistakes || !agent) {
+    if ((game ?? time ?? mistakes ?? agent) === undefined) {
         return res.status(400).json({ message: 'Game, time, mistakes and agent are required' })
     }
 
