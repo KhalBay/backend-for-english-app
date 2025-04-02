@@ -98,6 +98,7 @@ app.get('/scores', authenticateToken, async (req, res) => {
                 agent: row.agent,
                 time: row.time,
                 mistakes: row.mistakes,
+                wordSet: row.wordSet,
             });
         });
 
@@ -109,19 +110,19 @@ app.get('/scores', authenticateToken, async (req, res) => {
 })
 
 app.post('/scores', authenticateToken, async (req, res) => {
-    const { game, time, mistakes, agent } = req.body
+    const { game, time, mistakes, agent, wordSet } = req.body
     // const agent = req.user.username
 
     // if (!game || !time || !mistakes || !agent) {
-    if ((game ?? time ?? mistakes ?? agent) === undefined) {
+    if ((game ?? time ?? mistakes ?? agent ?? wordSet) === undefined) {
         return res.status(400).json({ message: 'Game, time, mistakes and agent are required' })
     }
 
     try {
         // Проверяем, есть ли уже результат у пользователя для этой игры
         const existingResult = await pool.query(
-            'SELECT * FROM scores WHERE game_name = $1 AND agent = $2',
-            [game, agent]
+            'SELECT * FROM scores WHERE game_name = $1 AND agent = $2 AND wordSet = $3',
+            [game, agent, wordSet]
         )
 
         if (existingResult.rows.length > 0) {
@@ -142,8 +143,8 @@ app.post('/scores', authenticateToken, async (req, res) => {
         } else {
             // Если результата нет, создаем новую запись
             await pool.query(
-                'INSERT INTO scores (game_name, agent, time, mistakes) VALUES ($1, $2, $3, $4)',
-                [game, agent, time, mistakes]
+                'INSERT INTO scores (game_name, agent, time, mistakes, word_set) VALUES ($1, $2, $3, $4, $5)',
+                [game, agent, time, mistakes, wordSet]
             )
             res.json({ message: 'Рекорд добавлен', record: { agent, time, mistakes } })
         }
