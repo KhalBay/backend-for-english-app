@@ -98,7 +98,7 @@ app.get('/scores', authenticateToken, async (req, res) => {
                 agent: row.agent,
                 time: row.time,
                 mistakes: row.mistakes,
-                wordSet: row.wordSet,
+                wordSet: row.wordset,
             });
         });
 
