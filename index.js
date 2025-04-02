@@ -143,7 +143,7 @@ app.post('/scores', authenticateToken, async (req, res) => {
         } else {
             // Если результата нет, создаем новую запись
             await pool.query(
-                'INSERT INTO scores (game_name, agent, time, mistakes, word_set) VALUES ($1, $2, $3, $4, $5)',
+                'INSERT INTO scores (game_name, agent, time, mistakes, wordSet) VALUES ($1, $2, $3, $4, $5)',
                 [game, agent, time, mistakes, wordSet]
             )
             res.json({ message: 'Рекорд добавлен', record: { agent, time, mistakes } })
