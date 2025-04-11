@@ -86,10 +86,31 @@ const authenticateToken = (req, res, next) => {
 
 app.get('/scores', authenticateToken, async (req, res) => {
     try {
-        const { rows } = await pool.query('SELECT * FROM scores')
-        const scoresByGame = {}
+        const { game } = req.query // Получаем параметр game из query string
 
-        // Группируем результаты по играм
+        let query = 'SELECT * FROM scores'
+        let params = []
+
+        // Если указана конкретная игра, добавляем условие WHERE
+        if (game) {
+            query += ' WHERE game_name = $1'
+            params.push(game)
+        }
+
+        const { rows } = await pool.query(query, params)
+
+        // Если запрашивалась конкретная игра, возвращаем плоский массив результатов
+        if (game) {
+            return res.json(rows.map(row => ({
+                agent: row.agent,
+                time: row.time,
+                mistakes: row.mistakes,
+                wordSet: row.wordset,
+            })))
+        }
+
+        // Иначе возвращаем сгруппированные результаты по всем играм (как было)
+        const scoresByGame = {}
         rows.forEach(row => {
             if (!scoresByGame[row.game_name]) {
                 scoresByGame[row.game_name] = []
@@ -99,8 +120,8 @@ app.get('/scores', authenticateToken, async (req, res) => {
                 time: row.time,
                 mistakes: row.mistakes,
                 wordSet: row.wordset,
-            });
-        });
+            })
+        })
 
         res.json(scoresByGame)
     } catch (err) {
@@ -155,9 +176,9 @@ app.post('/scores', authenticateToken, async (req, res) => {
 })
 
 app.get('/test', async (req, res) => {
-    // res.send('Test!')
-    const users = await pool.query('SELECT * FROM users')
-    res.send(users.rows)
+    res.send('Test!')
+    // const users = await pool.query('SELECT * FROM users')
+    // res.send(users.rows)
 })
 
 app.listen(port, () => {
