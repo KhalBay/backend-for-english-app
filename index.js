@@ -189,6 +189,15 @@ app.get('/db', async (req, res) => {
     }
 })
 
+app.get('/health', async (req, res) => {
+    try {
+        await pool.query('SELECT 1')
+        res.status(200).send('DB connection OK')
+    } catch (err) {
+        res.status(500).send('DB connection FAILED')
+    }
+})
+
 app.listen(port, () => {
     console.log(`Сервер запущен на порту ${port}`)
 })
