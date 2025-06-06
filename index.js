@@ -179,9 +179,14 @@ app.get('/test', async (req, res) => {
     res.send('Test!')
 })
 
-app.get('/bd', async (req, res) => {
-    const users = await pool.query('SELECT * FROM users')
-    res.send(users.rows)
+app.get('/db', async (req, res) => {
+    try {
+        const users = await pool.query('SELECT * FROM users')
+        res.json(users.rows)
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: 'Internal server error' })
+    }
 })
 
 app.listen(port, () => {
