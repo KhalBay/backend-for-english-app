@@ -19,12 +19,6 @@ const pool = new Pool({
 })
 
 app.use(cors())
-// app.use(cors({
-//     origin: process.env.DB_HOST,
-//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//     allowedHeaders: ['Content-Type', 'Authorization'],
-// }))
-
 app.use(express.json())
 
 const JWT_SECRET = process.env.JWT_SECRET
@@ -182,7 +176,9 @@ app.get('/test', async (req, res) => {
 app.get('/db', async (req, res) => {
     try {
         const users = await pool.query('SELECT * FROM users')
-        res.json(users.rows)
+        const scores = await pool.query('SELECT * FROM scores')
+        const allDB = users.rows + scores.rows
+        res.json(allDB)
     } catch (err) {
         console.error(err)
         res.status(500).json({ error: 'Internal server error' })
