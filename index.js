@@ -177,8 +177,10 @@ app.get('/db', async (req, res) => {
     try {
         const users = await pool.query('SELECT * FROM users')
         const scores = await pool.query('SELECT * FROM scores')
-        const allDB = [...users.rows, ...scores.rows]
-        res.json(allDB)
+        res.json({
+            users: users.rows,
+            scores: scores.rows
+        })
     } catch (err) {
         console.error(err)
         res.status(500).json({ error: 'Internal server error' })
