@@ -177,7 +177,7 @@ app.get('/db', async (req, res) => {
     try {
         const users = await pool.query('SELECT * FROM users')
         const scores = await pool.query('SELECT * FROM scores')
-        const allDB = users.rows + scores.rows
+        const allDB = [...users.rows, ...scores.rows]
         res.json(allDB)
     } catch (err) {
         console.error(err)
