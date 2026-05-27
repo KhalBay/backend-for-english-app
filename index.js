@@ -47,7 +47,7 @@ app.post('/auth', async (req, res) => {
 
         // Создаем JWT-токен
         const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, {
-            expiresIn: '100h', // Токен действителен 100 часов Поставить нееделю
+            expiresIn: '100y', // Токен действителен 100 часов Поставить нееделю
         })
 
         // Отправляем токен клиенту
